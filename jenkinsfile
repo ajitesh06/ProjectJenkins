@@ -1,32 +1,12 @@
-pipeline {
-    agent any
-
-    node {
-     def server = Artifactory.newServer url: 'http://107.21.128.235:8081', username: 'admin', password: 'password'
-     def rtMaven = Artifactory.newMavenBuild()
-     def buildInfo
-
-        stages {
-            
-            stage('Clone sources') {
-                git url: 'https://github.com/jfrogdev/project-examples.git'
-                }
-
-            stage('Artifactory configuration') {
-            rtMaven.tool = "Maven-3.3.9"
-            rtMaven.deployer releaseRepo:'libs-release-local', snapshotRepo:'libs-snapshot-local', server: server
-            rtMaven.resolver releaseRepo:'libs-release', snapshotRepo:'libs-snapshot', server: server
-            }
-
-
-            stage('Maven build') {
-            buildInfo = rtMaven.run pom: 'maven-example/pom.xml', goals: 'clean install'
-            }
-
-            stage('Publish build info') {
+node 
+{
+        stage 'checkout'
+       		checkout scm
+	stage 'Build'
+            	sh 'payslip/pom.xml', goals: 'clean install'
+           
+        stage 'Publish build info'
             server.publishBuildInfo buildInfo
-            }
             
-        }
-    }
+            
 }
